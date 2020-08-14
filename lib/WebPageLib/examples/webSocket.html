@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<meta charset="UTF-8">
+
+<head>
+
+    <script>
+        var connection = new WebSocket('ws://192.168.0.230:81/', ['arduino']);
+
+
+
+        //document.getElementById("mybody").scrollIntoView();
+
+        connection.onopen = function() {
+            connection.send('Message from Browser to ESP8266 yay its Working!! ' + new Date());
+            connection.send('ping');
+
+            // setInterval(function() {
+            //     connection.send('Time: ' + new Date());
+            // }, 30000);
+
+            connection.send('Time: ' + new Date());
+        };
+
+        connection.onerror = function(error) {
+            console.log('WebSocket Error ', error);
+        };
+
+        connection.onmessage = function(e) {
+            console.log('Server: ', e.data);
+            connection.send('Time: ' + new Date());
+
+            // str = document.getElementById("mybody").innerHTML
+            // str = str.replace(/('<br>')/g, "\n\r");
+            //var x = document.getElementById("myTextarea").value;
+            //document.getElementById("myTextarea").value = document.getElementById("myTextarea").value + new Date();
+
+
+            var message = e.data;
+            //str = str.replace(/('<br>')/g, "\n\r");
+
+            document.getElementById("mybody").innerHTML = document.getElementById("mybody").innerHTML + message;
+            //document.getElementById("demo").innerHTML = x;
+            var str = document.getElementById('mybody').innerHTML;
+            //document.getElementById('mybody').innerHTML = str.replace(/<br\s*[\/]?>/gi, "\n");
+
+            // str = document.getElementById("mybody").innerHTML
+            // document.getElementById("mybody").innerHTML = str;
+
+            var element = document.getElementById("mybody");
+            // element.scrollIntoView(false);
+            element.scrollIntoView({
+                behavior: "smooth",
+                block: "end",
+                inline: "nearest"
+            });
+        };
+    </script>
+    <style>
+        div,
+        fieldset,
+        input,
+        select {
+            padding: 5px;
+            font-size: 1em;
+        }
+        
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+        }
+        
+        select {
+            width: 100%;
+        }
+        
+        textarea {
+            resize: none;
+            width: 98%;
+            height: 318px;
+            padding: 5px;
+            overflow: auto;
+        }
+        
+        body {
+            text-align: left;
+            font-family: verdana;
+            font-size: 13px
+        }
+        
+        td {
+            padding: 0px;
+        }
+        
+        button {
+            border: 0;
+            border-radius: 0.3rem;
+            background-color: #1fa3ec;
+            color: #fff;
+            line-height: 2.4rem;
+            font-size: 1.2rem;
+            width: 100%;
+            -webkit-transition-duration: 0.4s;
+            transition-duration: 0.4s;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #0e70a4;
+        }
+        
+        .bred {
+            background-color: #d43535;
+        }
+        
+        .bred:hover {
+            background-color: #931f1f;
+        }
+        
+        .bgrn {
+            background-color: #47c266;
+        }
+        
+        .bgrn:hover {
+            background-color: #5aaf6f;
+        }
+        
+        a {
+            text-decoration: none;
+        }
+        
+        .p {
+            float: left;
+            text-align: left;
+        }
+        
+        .q {
+            float: right;
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body style="background-color:black;">
+
+    <div>
+        <p style="color:white;" id="mybody">
+        </p>
+    </div>
+    </div><br />
+    <!-- <textarea readonly id='mybodyx' name=' t1 ' cols='340 ' wrap='off '>
+    </textarea><br /><br /> -->
+</body>
+
+</html>
