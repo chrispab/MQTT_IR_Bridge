@@ -5,30 +5,32 @@
 #include <IRac.h>
 #include <IRtext.h>
 #include <IRutils.h>
-
 #include <IRsend.h>
 
 #include <WiFi.h>
-#include "WiFiLib.h"
-#include "MQTTLib.h"
 
-#include "LedFader.h"
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <AsyncElegantOTA.h>
 
+#include "WiFiLib.h"
+#include "MQTTLib.h"
+
+#include "LedFader.h"
+
+
 AsyncWebServer server(80);
 
 
-#define RED_LED_PIN GPIO_NUM_13     //LHS_P_3
-#define IR_LED_PIN GPIO_NUM_12      //LHS_P_4
+#define RED_LED_PIN GPIO_NUM_12     //LHS_P_3
+#define IR_LED_PIN GPIO_NUM_13      //LHS_P_4
 #define ONBOARD_LED_PIN GPIO_NUM_2      //
 
 const uint16_t kIrLed = IR_LED_PIN; // ESP8266 GPIO pin to use. Recommended: 4 (D2).
 IRsend irsend(kIrLed);              // Set the GPIO to be used to sending the message.
 
-#define HEART_BEAT_TIME 1000
-LedFader heartBeatLED(ONBOARD_LED_PIN, 1, 0, 200, HEART_BEAT_TIME, true);
+#define HEART_BEAT_TIME 500
+LedFader heartBeatLED(RED_LED_PIN, 1, 0, 255, HEART_BEAT_TIME, true);
 //LedFader testBeatLED(IR_LED_PIN, 1, 0, 255, HEART_BEAT_TIME, true);
 
 // MQTT stuff
@@ -122,7 +124,7 @@ void callback(char *topic, byte *payload, unsigned int length)
   // An IR detector/demodulator is connected to GPIO pin 14
   // e.g. D5 on a NodeMCU board.
   // Note: GPIO 16 won't work on the ESP8266 as it does not have interrupts.
-  const uint16_t kRecvPin = 14;
+  const uint16_t kRecvPin = IR_LED_PIN;
 
   // The Serial connection baud rate.
   // i.e. Status message will be sent to the PC at this baud rate.
