@@ -1,10 +1,6 @@
 #include <Arduino.h>
 #include <assert.h>
-// #include <IRrecv.h>
 #include <IRremoteESP8266.h>
-// #include <IRac.h>
-// #include <IRtext.h>
-// #include <IRutils.h>
 #include <AsyncElegantOTA.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
@@ -47,37 +43,22 @@ void callback(char *topic, byte *payload, unsigned int length) {
   strncat(fullMQTTmessage, (char *)payload, length);
   strcat(fullMQTTmessage, "]");
 
-  // Serial.println(fullMQTTmessage);
   Serial.println(fullMQTTmessage);
-  // only proces if topic starts with "IRBridge/cmnd/Power"
 
   //! possible incoming topics and payload:
   // "irbridge/amplifier/standby"     "on|off"
   if (strstr(topic, "irbridge/amplifier/code") != NULL) {  // raw code
-    //convert payload 'chars to the actual hex value
-    // if ((payload[1] - 'n') == 0) {  // found the 'n' in "on" ?
     Serial.print("raw code rx : ");
     unsigned long actualval;
     actualval = strtoul((char *)payload,    NULL, 10);
     Serial.println(actualval);
       irsend.sendNEC(actualval);
-    // } else {  // payload must have been "off"
-    //   Serial.println("ir send amp standby off");
-    //   irsend.sendNEC(0xE13E13EC);
     }
     if (strstr(topic, "irbridge/amplifier/standby") !=
         NULL) {  // does topic match this text?
-      // is it on or off? payload
-      // if ((payload[0] - '1') == 0) {
-      //   newState = 1;
-      // }
       if ((payload[1] - 'n') == 0) {  // found the 'n' in "on" ?
         Serial.println("ir send amp standby on");
         irsend.sendNEC(0xE13EA45B);
-        // delay(5000);
-        // Serial.println("NEC off");
-        // irsend.sendNEC(0xE13E13EC);
-        // delay(5000);
       } else {  // payload must have been "off"
         Serial.println("ir send amp standby off");
         irsend.sendNEC(0xE13E13EC);
@@ -85,12 +66,14 @@ void callback(char *topic, byte *payload, unsigned int length) {
     }
   }
 
+
   IPAddress mqttBroker(192, 168, 0, 200);
   WiFiClient WiFiEClient;
   PubSubClient MQTTclient(mqttBroker, 1883, callback, WiFiEClient);
   // PubSubClient client(WiFiEClient);
 
   const uint32_t kBaudRate = 115200;
+
 
   void setup() {
     heartBeatLED.begin();  // initialize
