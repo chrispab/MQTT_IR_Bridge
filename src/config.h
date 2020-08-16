@@ -5,6 +5,15 @@
 
 #define RELEASE
 
+// #define ALT_ID
+
+#ifdef ALT_ID
+    #define MQTT_CLIENT_NAME "IRBridgeMQTTClientALT"
+    #define LWT_TOPIC "irbridgeALT/LWT"
+#else
+    #define MQTT_CLIENT_NAME "IRBridgeMQTTClient"
+    #define LWT_TOPIC "irbridge/LWT"
+#endif
 
 
 #define LIGHT_SENSOR_LOWER_THRESHOLD 1500
