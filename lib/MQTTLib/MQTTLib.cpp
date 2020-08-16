@@ -20,7 +20,9 @@ char publishHumiTopic[] = "433Bridge/Humidity";
 
 // strcpy(socketIDFunctionStrings[0], "blah");
 
-#include <NTPClient.h>
+// #include <NTPClient.h>
+#include "Arduino.h"
+
 // extern NTPClient timeClient;
 // extern void storeREST(char *, char *, char *);
 //#include "WebSerial.h"
@@ -164,27 +166,6 @@ void processMQTTMessage(void) {
   }
 }
 
-char *getMQTTDisplayString(char *MQTTStatus) {
-  char msg[] = "This is a message placeholder with chars for space";
-  char socketNumber[] = "This is a also message placeh";
-
-  sprintf(socketNumber, "%d", (MQTTSocketNumber));
-
-  strcpy(msg, socketNumber);
-
-  strcat(msg, "-");
-  // strcat(msg, socketIDFunctionStrings[MQTTSocketNumber - 1]);
-  strcat(msg, ":");
-
-  if (MQTTNewState == 0) {
-    strcat(msg, " OFF");
-  } else {
-    strcat(msg, " ON");
-  }
-  // Serial.println(msg);
-  strcpy(MQTTStatus, msg);
-  return MQTTStatus;
-}
 
 #include <PubSubClient.h>
 extern PubSubClient MQTTclient;
