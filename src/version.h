@@ -1,4 +1,4 @@
-#define VERSION "V0.1 Br:\"master\""
+#define VERSION "V0.11 Br:\"master\""
 // #define TITLE_LINE1 "     ESP32"
 // #define TITLE_LINE2 "MQTT 433MhZ Bridge"
 // #define TITLE_LINE3 "Zone RF24 Dog"

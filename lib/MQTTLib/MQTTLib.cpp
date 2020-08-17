@@ -1,5 +1,7 @@
 //#include "WebSocketLib.h"
 #include "config.h"
+#include <PubSubClient.h>
+extern PubSubClient MQTTclient;
 
 bool MQTTNewData = false;
 int MQTTNewState = 0;      // 0 or 1
@@ -14,25 +16,73 @@ char subscribeTopic3[] = "Zone3/#";
 
 char publishTempTopic[] = "433Bridge/Temperature";
 char publishHumiTopic[] = "433Bridge/Humidity";
-// char publishLWTTopic[] = "433Bridge/LWT";
 
-// #include "socketIDFS.h"
+/**
+ * 
+ *
+ * 
+*/ 
+void connectMQTT() {
+  bool MQTTConnectTimeout = false;
+  unsigned long checkPeriodMillis = 20000;
+  unsigned long timeOutMillis = 5000;
+  unsigned long now;
+  unsigned long nowMillis = millis();
+  static unsigned long lastReconnectAttemptMillis =
+      nowMillis - checkPeriodMillis - 1000;
 
-// strcpy(socketIDFunctionStrings[0], "blah");
+  // myWebSerial.println("HELLO...");
+  // Serial.print("nowMillis : ");
+  // Serial.println(nowMillis);
+  // Serial.println("Last reconn attempt : ", lastReconnectAttemptMillis);
+  // myWebSerial.println("checkPeriodMillis : ", checkPeriodMillis);
 
-// #include <NTPClient.h>
-#include "Arduino.h"
+  if ((nowMillis - lastReconnectAttemptMillis) > checkPeriodMillis) {
+    // myWebSerial.println("ready to try MQTT reconnectMQTT...");
+    Serial.print("nowMillis : ");
+    Serial.println(nowMillis);
+    // Serial.print("lastReconnectAttemptMillis : ");
+    // Serial.println(lastReconnectAttemptMillis);
+    // Serial.print("checkPeriodMillis : ");
+    // Serial.println(checkPeriodMillis);
+    Serial.println("Checking if MQTT needs reconnect");
 
-// extern NTPClient timeClient;
-// extern void storeREST(char *, char *, char *);
-//#include "WebSerial.h"
-// extern WebSerial myWebSerial;
+    // if (!MQTTclient.connected()) {
+      MQTTConnectTimeout = false;
+    while (!MQTTclient.connected() && !MQTTConnectTimeout)  // loop till connected or timed out
+      {
+        Serial.println("MQTT not connected so Attempting MQTT connection...");
+        // boolean connect(const char* id, const char* willTopic, uint8_t
+        // willQos, boolean willRetain, const char* willMessage);
+        if (MQTTclient.connect(MQTT_CLIENT_NAME, LWT_TOPIC, 1, true,
+                               "Offline")) {
+          // myWebSerial.println("connected to MQTT server");
+          MQTTclient.publish(LWT_TOPIC, "Online", true);  // ensure send online
+          // MQTTclient.publish(publishLWTTopic, "Online");
+          MQTTclient.subscribe(subscribeTopic);
+          MQTTclient.subscribe(subscribeTopic2);
+        //   MQTTclient.subscribe(subscribeTopic3);
+        } else {
+          // myWebSerial.println("MQTT connection failed, rc=");
+          Serial.println(MQTTclient.state());
+          // myWebSerial.println("MQTT STATE : ", MQTTclient.state());
+          // myWebSerial.println(" try again ..");
+        }
+        now = millis();
+        MQTTConnectTimeout = ((now - nowMillis) > timeOutMillis) ? true : false;
+      }
+      (!MQTTConnectTimeout)
+          ? Serial.println("MQTT Connection made or already active !")
+          : Serial.println("MQTT Connection attempt Timed Out!");
+    // } else {  // we are already connected
+    //   Serial.println("MQTT still connected -skip reconnect");
+    // }
+    now = millis();
+    lastReconnectAttemptMillis = now;
+  }
+}
 
-// support for hearbeat from MQTT message
-// #include "ZoneController.h"
-// extern ZoneController ZCs[];
-//#include "SupportLib.h"
-// static char messageText[21];
+
 extern char *getTimeStr();
 
 // MQTTclient call back if mqtt messsage rxed (cos has been subscribed  to)
@@ -167,65 +217,3 @@ void processMQTTMessage(void) {
 }
 
 
-#include <PubSubClient.h>
-extern PubSubClient MQTTclient;
-
-void connectMQTT() {
-  bool MQTTConnectTimeout = false;
-  unsigned long checkPeriodMillis = 20000;
-  unsigned long timeOutMillis = 5000;
-  unsigned long now;
-  unsigned long nowMillis = millis();
-  static unsigned long lastReconnectAttemptMillis =
-      nowMillis - checkPeriodMillis - 1000;
-
-  // myWebSerial.println("HELLO...");
-  // Serial.print("nowMillis : ");
-  // Serial.println(nowMillis);
-  // Serial.println("Last reconn attempt : ", lastReconnectAttemptMillis);
-  // myWebSerial.println("checkPeriodMillis : ", checkPeriodMillis);
-
-  if ((nowMillis - lastReconnectAttemptMillis) > checkPeriodMillis) {
-    // myWebSerial.println("ready to try MQTT reconnectMQTT...");
-    Serial.print("nowMillis : ");
-    Serial.println(nowMillis);
-    // Serial.print("lastReconnectAttemptMillis : ");
-    // Serial.println(lastReconnectAttemptMillis);
-    // Serial.print("checkPeriodMillis : ");
-    // Serial.println(checkPeriodMillis);
-    Serial.println("Checking if MQTT needs reconnect");
-
-    if (!MQTTclient.connected()) {
-      MQTTConnectTimeout = false;
-      while (!MQTTConnectTimeout)  // loop till connected or timed out
-      {
-        Serial.println("MQTT not connected so Attempting MQTT connection...");
-        // boolean connect(const char* id, const char* willTopic, uint8_t
-        // willQos, boolean willRetain, const char* willMessage);
-        if (MQTTclient.connect(MQTT_CLIENT_NAME, LWT_TOPIC, 1, true,
-                               "Offline")) {
-          // myWebSerial.println("connected to MQTT server");
-          MQTTclient.publish(LWT_TOPIC, "Online", true);  // ensure send online
-          // MQTTclient.publish(publishLWTTopic, "Online");
-          MQTTclient.subscribe(subscribeTopic);
-          MQTTclient.subscribe(subscribeTopic2);
-        //   MQTTclient.subscribe(subscribeTopic3);
-        } else {
-          // myWebSerial.println("MQTT connection failed, rc=");
-          Serial.println(MQTTclient.state());
-          // myWebSerial.println("MQTT STATE : ", MQTTclient.state());
-          // myWebSerial.println(" try again ..");
-        }
-        now = millis();
-        MQTTConnectTimeout = ((now - nowMillis) > timeOutMillis) ? true : false;
-      }
-      (!MQTTConnectTimeout)
-          ? Serial.println("MQTT Connection made !")
-          : Serial.println("MQTT Connection attempt Timed Out!");
-    } else {  // we are already connected
-      Serial.println("MQTT still connected -skip reconnect");
-    }
-    now = millis();
-    lastReconnectAttemptMillis = now;
-  }
-}
