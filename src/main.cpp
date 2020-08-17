@@ -18,7 +18,7 @@
 #include "MQTTLib.h"
 #include "WiFiLib.h"
 
-#define GREEN_LED_PIN GPIO_NUM_12     //
+#define GREEN_LED_PIN GPIO_NUM_12   //
 #define IR_LED_PIN GPIO_NUM_13      //
 #define ONBOARD_LED_PIN GPIO_NUM_2  //
 #define RX_PIN GPIO_NUM_14          //
@@ -82,7 +82,7 @@ void setup() {
   printWifiStatus();
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
-    Serial.flush();
+  Serial.flush();
 
   delay(5000);
   connectMQTT();
@@ -95,6 +95,9 @@ void setup() {
   // Serial.begin(kBaudRate, SERIAL_8N1);
   // while (!Serial)  // Wait for the serial connection to be establised.
   //   delay(50);
+  /* we use mDNS instead of IP of ESP32 directly */
+  // hostname.local
+  ArduinoOTA.setHostname("irbridge");
 
   ArduinoOTA
       .onStart([]() {
@@ -132,7 +135,6 @@ void setup() {
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 }
-
 
 void loop() {
   // connectWiFi();
