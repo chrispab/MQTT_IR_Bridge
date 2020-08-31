@@ -9,9 +9,9 @@ int MQTTSocketNumber = 1;  // 1-16
 
 // MQTT stuff
 // IPAddress mqttBroker(192, 168, 0, 200);
-char subscribeTopic[] = "irbridge/amplifier/standby";
-char subscribeTopic2[] = "irbridge/amplifier/code";
-char subscribeTopic3[] = "Zone3/#";
+char subscribeTopic[] = "irbridge/#";
+// char subscribeTopic2[] = "irbridge/amplifier/code";
+// char subscribeTopic3[] = "Zone3/#";
 // char subscribeTopic[] = "#";
 
 char publishTempTopic[] = "433Bridge/Temperature";
@@ -60,7 +60,7 @@ void connectMQTT() {
           MQTTclient.publish(LWT_TOPIC, "Online", true);  // ensure send online
           // MQTTclient.publish(publishLWTTopic, "Online");
           MQTTclient.subscribe(subscribeTopic);
-          MQTTclient.subscribe(subscribeTopic2);
+          // MQTTclient.subscribe(subscribeTopic2);
         //   MQTTclient.subscribe(subscribeTopic3);
         } else {
           // myWebSerial.println("MQTT connection failed, rc=");
