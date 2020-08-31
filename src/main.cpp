@@ -27,9 +27,11 @@
 const uint16_t kIrLed = IR_LED_PIN;  // ESP8266 GPIO pin to use.
 IRsend irsend(kIrLed);               // Set the GPIO to be used to sending the message.
 
-#define HEART_BEAT_TIME 430
-LedFader heartBeatLED(GREEN_LED_PIN, 1, 0, 255, HEART_BEAT_TIME, true);
-// LedFader testBeatLED(IR_LED_PIN, 1, 0, 255, HEART_BEAT_TIME, true);
+#define HEART_BEAT_TIME 800
+#define BLUE_BEAT_TIME 300
+
+LedFader heartBeatLED(GREEN_LED_PIN, 1, 0, 255, HEART_BEAT_TIME);
+LedFader blueBeatLED(ONBOARD_LED_PIN, 2, 0, 50, BLUE_BEAT_TIME);
 
 // raw codes
 uint16_t rawData[75] = {
@@ -60,25 +62,26 @@ void callback(char *topic, byte *payload, unsigned int length) {
 
     Serial.println(fullMQTTmessage);
 
-    //! possible incoming topics and payload:
-    // "irbridge/amplifier/standby"     "on|off"
-    if (strcmp(topic, "irbridge/amplifier/code") == 0) {  // raw code
-        Serial.print("plain NEC code Tx : ");
-        unsigned long actualval;
-        actualval = strtoul((char *)payload, NULL, 10);
-        Serial.println(actualval);
-        irsend.sendNEC(actualval);
-    }
-    if (strcmp(topic, "irbridge/amplifier/raw") == 0) {  // raw code
-        Serial.print("raw code Tx : ");
-        unsigned long actualval;
-        actualval = strtoul((char *)payload, NULL, 10);
-        Serial.println(actualval);
-        // irsend.sendNEC(actualval);
-        irsend.sendRaw(rawData, rawDataLength, 38);  // Send a raw data capture at 38kHz.
-    }
-    if (strcmp(topic, "irbridge/amplifier/standby") == 0) {  // does topic match this text?
-        if ((payload[1] - 'n') == 0) {                       // found the 'n' in "on" ?
+    if (strcmp(topic, "irbridge/amplifier/video1") == 0) {  // does topic match this text?
+        Serial.println("ir send amp source select video1");
+        irsend.sendNEC(SELECT_VIDEO1);
+    } else if (strcmp(topic, "irbridge/amplifier/tuner") == 0) {  // does topic match this text?
+        Serial.println("ir send amp source select tuner");
+        irsend.sendNEC(SELECT_TUNER);
+    } else if (strcmp(topic, "irbridge/amplifier/aux") == 0) {  // does topic match this text?
+        Serial.println("ir send amp source select AUX");
+        irsend.sendNEC(SELECT_AUX);
+    } else if (strcmp(topic, "irbridge/amplifier/mute") == 0) {  // does topic match this text?
+        Serial.println("ir send amp mute");
+        irsend.sendNEC(MUTE);
+    } else if (strcmp(topic, "irbridge/amplifier/volumeup") == 0) {  // does topic match this text?
+        Serial.println("ir send amp vol up");
+        irsend.sendNEC(VOLUME_UP);
+    } else if (strcmp(topic, "irbridge/amplifier/volumedown") == 0) {  // does topic match this text?
+        Serial.println("ir send amp vol down");
+        irsend.sendNEC(VOLUME_DOWN);
+    } else if (strcmp(topic, "irbridge/amplifier/standby") == 0) {  // does topic match this text?
+        if ((payload[1] - 'n') == 0) {                              // found the 'n' in "on" ?
             Serial.println("ir send amp standby on");
             irsend.sendNEC(STANDBY_ON);
         } else {  // payload must have been "off"
@@ -86,29 +89,19 @@ void callback(char *topic, byte *payload, unsigned int length) {
             irsend.sendNEC(STANDBY_OFF);
         }
     }
-    if (strcmp(topic, "irbridge/amplifier/video1") == 0) {  // does topic match this text?
-        Serial.println("ir send amp source select video1");
-        irsend.sendNEC(SELECT_VIDEO1);
-    }
-    if (strcmp(topic, "irbridge/amplifier/tuner") == 0) {  // does topic match this text?
-        Serial.println("ir send amp source select tuner");
-        irsend.sendNEC(SELECT_TUNER);
-    }
-    if (strcmp(topic, "irbridge/amplifier/aux") == 0) {  // does topic match this text?
-        Serial.println("ir send amp source select AUX");
-        irsend.sendNEC(SELECT_AUX);
-    }
-    if (strcmp(topic, "irbridge/amplifier/mute") == 0) {  // does topic match this text?
-        Serial.println("ir send amp mute");
-        irsend.sendNEC(MUTE);
-    }
-    if (strcmp(topic, "irbridge/amplifier/volumeup") == 0) {  // does topic match this text?
-        Serial.println("ir send amp vol up");
-        irsend.sendNEC(VOLUME_UP);
-    }
-    if (strcmp(topic, "irbridge/amplifier/volumedown") == 0) {  // does topic match this text?
-        Serial.println("ir send amp vol down");
-        irsend.sendNEC(VOLUME_DOWN);
+    //! possible incoming topics and payload: "irbridge/amplifier/standby"     "on|off"
+    else if (strcmp(topic, "irbridge/amplifier/code") == 0) {  // raw code
+        Serial.print("plain NEC code Tx : ");
+        unsigned long actualval;
+        actualval = strtoul((char *)payload, NULL, 10);
+        Serial.println(actualval);
+        irsend.sendNEC(actualval);
+    } else if (strcmp(topic, "irbridge/amplifier/raw") == 0) {  // raw code
+        Serial.print("raw code Tx : ");
+        unsigned long actualval;
+        actualval = strtoul((char *)payload, NULL, 10);
+        Serial.println(actualval);
+        irsend.sendRaw(rawData, rawDataLength, 38);  // Send a raw data capture at 38kHz.
     }
 }
 
@@ -132,7 +125,7 @@ void setup() {
 
     irsend.begin();
     heartBeatLED.begin();  // initialize
-    // testBeatLED.begin();                         // initialize
+    blueBeatLED.begin();   // initialize
     // you're connected now, so print out the status:
 
     // Serial.begin(kBaudRate, SERIAL_8N1);
@@ -187,6 +180,7 @@ void loop() {
     ArduinoOTA.handle();
 
     heartBeatLED.update();
+    blueBeatLED.update();
 
     MQTTclient.loop();  // process any MQTT stuff, returned in callback
 }
