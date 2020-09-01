@@ -96,13 +96,14 @@ void callback(char *topic, byte *payload, unsigned int length) {
         actualval = strtoul((char *)payload, NULL, 10);
         Serial.println(actualval);
         irsend.sendNEC(actualval);
-    } else if (strcmp(topic, "irbridge/amplifier/raw") == 0) {  // raw code
-        Serial.print("raw code Tx : ");
-        unsigned long actualval;
-        actualval = strtoul((char *)payload, NULL, 10);
-        Serial.println(actualval);
-        irsend.sendRaw(rawData, rawDataLength, 38);  // Send a raw data capture at 38kHz.
-    }
+    } 
+//     else if (strcmp(topic, "irbridge/amplifier/raw") == 0) {  // raw code
+//         Serial.print("raw code Tx : ");
+//         unsigned long actualval;
+//         actualval = strtoul((char *)payload, NULL, 10);
+//         Serial.println(actualval);
+//         irsend.sendRaw(rawData, rawDataLength, 38);  // Send a raw data capture at 38kHz.
+//     }
 }
 
 IPAddress mqttBroker(192, 168, 0, 200);

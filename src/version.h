@@ -1,2 +1,2 @@
-#define VERSION "V0.17 : master : more features"
+#define VERSION "V0.18 : master : more features"
 
