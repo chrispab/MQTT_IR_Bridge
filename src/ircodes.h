@@ -20,10 +20,10 @@
 #define MUTE 0xE13E29D6
 
 // on      0xE13EA45B
-#define STANDBY_ON 0xE13EA45B
+#define POWER_ON 0xE13EA45B
 
 // off     0xE13E13EC
-#define STANDBY_OFF 0xE13E13EC
+#define POWER_OFF 0xE13E13EC
 
 
 #endif

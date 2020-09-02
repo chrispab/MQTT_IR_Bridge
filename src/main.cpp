@@ -80,13 +80,19 @@ void callback(char *topic, byte *payload, unsigned int length) {
     } else if (strcmp(topic, "irbridge/amplifier/volumedown") == 0) {  // does topic match this text?
         Serial.println("ir send amp vol down");
         irsend.sendNEC(VOLUME_DOWN);
+    } else if (strcmp(topic, "irbridge/amplifier/poweron") == 0) {  // does topic match this text?
+        Serial.println("ir send amp power on");
+        irsend.sendNEC(POWER_ON);
+    } else if (strcmp(topic, "irbridge/amplifier/poweroff") == 0) {  // does topic match this text?
+        Serial.println("ir send amp power off");
+        irsend.sendNEC(POWER_OFF);
     } else if (strcmp(topic, "irbridge/amplifier/standby") == 0) {  // does topic match this text?
         if ((payload[1] - 'n') == 0) {                              // found the 'n' in "on" ?
             Serial.println("ir send amp standby on");
-            irsend.sendNEC(STANDBY_ON);
+            irsend.sendNEC(POWER_ON);
         } else {  // payload must have been "off"
             Serial.println("ir send amp standby off");
-            irsend.sendNEC(STANDBY_OFF);
+            irsend.sendNEC(POWER_OFF);
         }
     }
     //! possible incoming topics and payload: "irbridge/amplifier/standby"     "on|off"
@@ -96,14 +102,14 @@ void callback(char *topic, byte *payload, unsigned int length) {
         actualval = strtoul((char *)payload, NULL, 10);
         Serial.println(actualval);
         irsend.sendNEC(actualval);
-    } 
-//     else if (strcmp(topic, "irbridge/amplifier/raw") == 0) {  // raw code
-//         Serial.print("raw code Tx : ");
-//         unsigned long actualval;
-//         actualval = strtoul((char *)payload, NULL, 10);
-//         Serial.println(actualval);
-//         irsend.sendRaw(rawData, rawDataLength, 38);  // Send a raw data capture at 38kHz.
-//     }
+    }
+    //     else if (strcmp(topic, "irbridge/amplifier/raw") == 0) {  // raw code
+    //         Serial.print("raw code Tx : ");
+    //         unsigned long actualval;
+    //         actualval = strtoul((char *)payload, NULL, 10);
+    //         Serial.println(actualval);
+    //         irsend.sendRaw(rawData, rawDataLength, 38);  // Send a raw data capture at 38kHz.
+    //     }
 }
 
 IPAddress mqttBroker(192, 168, 0, 200);
