@@ -13,6 +13,7 @@
 #include <WiFi.h>
 #include <WiFiUdp.h>
 //
+#include "config.h"
 
 #include "LedFader.h"
 #include "MQTTLib.h"
@@ -112,7 +113,7 @@ void callback(char *topic, byte *payload, unsigned int length) {
     //     }
 }
 
-IPAddress mqttBroker(192, 168, 0, 200);
+IPAddress mqttBroker(192, 168, 0, MQTT_LAST_OCTET);
 WiFiClient myWiFiClient;
 PubSubClient MQTTclient(mqttBroker, 1883, callback, myWiFiClient);
 
