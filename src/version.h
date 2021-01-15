@@ -1,2 +1,2 @@
-#define VERSION "V0.21 : master : mqtt server .100"
+#define VERSION "V0.22 : master : non blocking MQTT reconnect"
 

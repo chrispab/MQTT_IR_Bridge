@@ -32,6 +32,7 @@ void connectMQTT() {
     static unsigned long lastReconnectAttemptMillis =
         nowMillis - checkPeriodMillis - 1000;
 
+    //is it time to chek the MQTT connection again?
     if ((nowMillis - lastReconnectAttemptMillis) > checkPeriodMillis) {
         // myWebSerial.println("ready to try MQTT reconnectMQTT...");
         Serial.print("nowMillis : ");
@@ -45,8 +46,7 @@ void connectMQTT() {
             Serial.println("MQTT not connected so Attempting MQTT connection...");
             // boolean connect(const char* id, const char* willTopic, uint8_t
             // willQos, boolean willRetain, const char* willMessage);
-            if (MQTTclient.connect(MQTT_CLIENT_NAME, LWT_TOPIC, 1, true,
-                                   "Offline")) {
+            if (MQTTclient.connect(MQTT_CLIENT_NAME, LWT_TOPIC, 1, true, "Offline")) {
                 // myWebSerial.println("connected to MQTT server");
                 MQTTclient.publish(LWT_TOPIC, "Online", true);  // ensure send online
                 // MQTTclient.publish(publishLWTTopic, "Online");
@@ -66,6 +66,38 @@ void connectMQTT() {
         lastReconnectAttemptMillis = now;
     }
 }
+
+
+long lastReconnectAttempt = 0;
+
+boolean reconnectMQTT() {
+
+    // Serial.println("MQTT is not connected.. trying to connect now");
+
+    long now = millis();
+    if (now - lastReconnectAttempt > 5000) {
+        lastReconnectAttempt = now;
+
+        Serial.println("MQTT is not connected.. trying to connect now");
+
+        // Attempt to reconnect
+        if (MQTTclient.connect(MQTT_CLIENT_NAME, LWT_TOPIC, 1, true, "Offline")) {
+
+            // Once connected, publish an announcement...
+            MQTTclient.publish("outTopic", "hello world");
+            MQTTclient.publish(LWT_TOPIC, "Online", true);  // ensure send online
+            // ... and resubscribe
+            MQTTclient.subscribe(subscribeTopic);
+    
+            Serial.println("MQTT is now connected....");
+
+            lastReconnectAttempt = 0;
+        }
+    }
+    return MQTTclient.connected();
+}
+
+
 
 extern char *getTimeStr();
 

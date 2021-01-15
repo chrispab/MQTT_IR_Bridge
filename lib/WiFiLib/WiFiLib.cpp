@@ -8,29 +8,35 @@ const char pass[] = MY_SSID_PASSWORD;
 int status = WL_IDLE_STATUS;
 
 void connectWiFi() {
-  WiFi.setHostname("irbridge");
-  WiFi.begin(ssid, pass);  // move out or if
-  while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    Serial.println("Connection Failed! Rebooting...");
-    delay(5000);
-    ESP.restart();
-  }
-  //   printWifiStatus();
+    // Serial.println("Hi from connectWifi");
+
+    if (!WiFi.isConnected()) {
+        Serial.println("Wifi is not connected ...Trying to connect now");
+        WiFi.setHostname("irbridge");
+        WiFi.begin(ssid, pass);  // move out or if
+        while (WiFi.waitForConnectResult() != WL_CONNECTED) {
+            Serial.println("Connection Failed! Rebooting...");
+            delay(5000);
+            ESP.restart();
+        }
+        Serial.println("Wifi is now connected.....");
+        printWifiStatus();
+    }
 }
 
 void printWifiStatus() {
-  // print the SSID of the network you're attached to:
-  Serial.print("SSID: ");
-  Serial.println(WiFi.SSID());
+    // print the SSID of the network you're attached to:
+    Serial.print("SSID: ");
+    Serial.println(WiFi.SSID());
 
-  // print your WiFi shield's IP address:
-  IPAddress ip = WiFi.localIP();
-  Serial.print("IP Address: ");
-  Serial.println(ip);
+    // print your WiFi shield's IP address:
+    IPAddress ip = WiFi.localIP();
+    Serial.print("IP Address: ");
+    Serial.println(ip);
 
-  // print the received signal strength:
-  long rssi = WiFi.RSSI();
-  Serial.print("signal strength (RSSI):");
-  Serial.print(rssi);
-  Serial.println(" dBm");
+    // print the received signal strength:
+    long rssi = WiFi.RSSI();
+    Serial.print("signal strength (RSSI):");
+    Serial.print(rssi);
+    Serial.println(" dBm");
 }

@@ -13,11 +13,10 @@
 #include <WiFi.h>
 #include <WiFiUdp.h>
 //
-#include "config.h"
-
 #include "LedFader.h"
 #include "MQTTLib.h"
 #include "WiFiLib.h"
+#include "config.h"
 #include "ircodes.h"
 
 #define GREEN_LED_PIN GPIO_NUM_12   //
@@ -121,7 +120,9 @@ const uint32_t kBaudRate = 115200;
 
 void setup() {
     Serial.begin(115200);
-    Serial.println("Booting");
+    delay(3000);
+
+    Serial.println("Hi from irbridge ... Booting");
     connectWiFi();
     printWifiStatus();
     Serial.print("IP address: ");
@@ -129,7 +130,8 @@ void setup() {
     Serial.flush();
 
     delay(5000);
-    connectMQTT();
+    // connectMQTT();
+    reconnectMQTT();
 
     irsend.begin();
     heartBeatLED.begin();  // initialize
@@ -184,11 +186,18 @@ void setup() {
 void loop() {
     // connectWiFi();
     // maybe checkwifi here
-    connectMQTT();
+    connectWiFi();
+
+    if (!MQTTclient.connected()) {
+        // Attempt to reconnect
+        reconnectMQTT();  // Attempt to reconnect
+    } else {
+        // Client is connected
+        MQTTclient.loop();  // process any MQTT stuff, returned in callback
+    }
+
     ArduinoOTA.handle();
 
     heartBeatLED.update();
     blueBeatLED.update();
-
-    MQTTclient.loop();  // process any MQTT stuff, returned in callback
 }
