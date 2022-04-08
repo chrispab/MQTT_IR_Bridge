@@ -1,6 +1,16 @@
 #ifndef _IRCODES_H
 #define _IRCODES_H
-
+power on      0xE13EA45B
+power off     0xE13E13EC
+cd 0xE13EA15E
+tuner   0xE13EBB44
+aux     0xE13ED926
+disc 0xE13E916E
+tape 1 mon 0xE13EB14E
+tape 2 0xE13E8976
+video 1 0xE13E43BC
+video 2 0xE13E03FC
+video 3 0xE13E837C
 // tuner   0xE13EBB44
 #define SELECT_TUNER 0xE13EBB44
 
