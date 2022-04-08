@@ -44,6 +44,24 @@ uint16_t rawData[75] = {
 // length = 75 ^ above raw array
 uint16_t rawDataLength = 75;
 
+
+unsigned int lookupCommandCode(const char *commandName)
+{
+  typedef struct item_t { const char *command; unsigned int code; } item_t;
+  item_t table[] = {
+    { "power_on", POWER_ON },
+    { "power_off", POWER_OFF },
+    { NULL, 0 }
+  };
+  for (item_t *p = table; p->command != NULL; ++p) {
+      if (strcmp(p->command, commandName) == 0) {
+          return p->code;
+      }
+  }
+  return -EINVAL;
+}
+
+
 // MQTT stuff
 void callback(char *topic, byte *payload, unsigned int length) {
     // handle message arrived
@@ -62,37 +80,44 @@ void callback(char *topic, byte *payload, unsigned int length) {
 
     Serial.println(fullMQTTmessage);
 
+// assume filtered for 'irbridge/amplifier/' already
+// get last part of string - the command,
+// then irsend the code version of the command -m use a struct?
+//  https://stackoverflow.com/questions/5193570/value-lookup-table-in-c-by-strings
+
+
+
     if (strcmp(topic, "irbridge/amplifier/video1") == 0) {  // does topic match this text?
         Serial.println("ir send amp source select video1");
-        irsend.sendNEC(SELECT_VIDEO1);
+        // irsend.sendNEC(SELECT_VIDEO1);
     } else if (strcmp(topic, "irbridge/amplifier/tuner") == 0) {  // does topic match this text?
         Serial.println("ir send amp source select tuner");
-        irsend.sendNEC(SELECT_TUNER);
+        // irsend.sendNEC(SELECT_TUNER);
     } else if (strcmp(topic, "irbridge/amplifier/aux") == 0) {  // does topic match this text?
         Serial.println("ir send amp source select AUX");
-        irsend.sendNEC(SELECT_AUX);
+        // irsend.sendNEC(SELECT_AUX);
     } else if (strcmp(topic, "irbridge/amplifier/mute") == 0) {  // does topic match this text?
         Serial.println("ir send amp mute");
-        irsend.sendNEC(MUTE);
+        // irsend.sendNEC(MUTE);
     } else if (strcmp(topic, "irbridge/amplifier/volumeup") == 0) {  // does topic match this text?
         Serial.println("ir send amp vol up");
-        irsend.sendNEC(VOLUME_UP);
+        // irsend.sendNEC(VOLUME_UP);
     } else if (strcmp(topic, "irbridge/amplifier/volumedown") == 0) {  // does topic match this text?
         Serial.println("ir send amp vol down");
-        irsend.sendNEC(VOLUME_DOWN);
+        // irsend.sendNEC(VOLUME_DOWN);
     } else if (strcmp(topic, "irbridge/amplifier/poweron") == 0) {  // does topic match this text?
         Serial.println("ir send amp power on");
-        irsend.sendNEC(POWER_ON);
+        // irsend.sendNEC(POWER_ON);
     } else if (strcmp(topic, "irbridge/amplifier/poweroff") == 0) {  // does topic match this text?
         Serial.println("ir send amp power off");
-        irsend.sendNEC(POWER_OFF);
+        // irsend.sendNEC(POWER_OFF);
     } else if (strcmp(topic, "irbridge/amplifier/standby") == 0) {  // does topic match this text?
         if ((payload[1] - 'n') == 0) {                              // found the 'n' in "on" ?
             Serial.println("ir send amp standby on");
-            irsend.sendNEC(POWER_ON);
+            // irsend.sendNEC(POWER_ON);
         } else {  // payload must have been "off"
             Serial.println("ir send amp standby off");
-            irsend.sendNEC(POWER_OFF);
+            // irsend.sendNEC(POWER_OFF);
         }
     }
     //! possible incoming topics and payload: "irbridge/amplifier/standby"     "on|off"
