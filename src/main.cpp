@@ -56,18 +56,18 @@ unsigned int lookupCommandCode(const char *commandName) {
         {"power_off", POWER_OFF},
         {"cd", CD},
         {"tuner", TUNER},
-        {"aux", AUX },
+        {"aux", AUX},
         {"disc", DISC},
         {"tape1_mon", TAPE_1_MON},
         {"tape2", TAPE_2},
         {"video1", VIDEO1},
-        {"video2", VIDEO2},                
-        {"video3", VIDEO3},        
+        {"video2", VIDEO2},
+        {"video3", VIDEO3},
         {"volume_up", VOLUME_UP},
-        {"volume_down", VOLUME_DOWN},                
-        {"mute", MUTE},           
+        {"volume_down", VOLUME_DOWN},
+        {"mute", MUTE},
         {NULL, 0}};
-        
+
     for (item_t *p = table; p->commandStr != NULL; ++p) {
         if (strcmp(p->commandStr, commandName) == 0) {
             return p->code;
@@ -78,15 +78,17 @@ unsigned int lookupCommandCode(const char *commandName) {
 
 // pass in topic string and
 // return pointer to final token - command string
-char *getCommandStr(char *topic) {
-    char *lastToken = NULL;
+char *getCommandStr(char *topic, char *resultCommandStr) {
+    // char *lastToken = NULL;
     char *token = strtok(topic, "/");
     while (token) {
         Serial.printf("token: %s\n", token);
-        lastToken = token;
+        // copy token string
+        strcpy(resultCommandStr, token);
+        // lastToken = token;
         token = strtok(NULL, "/");
     }
-    return lastToken;
+    return 0;
 }
 
 // MQTT stuff
@@ -111,48 +113,20 @@ void callback(char *topic, byte *payload, unsigned int length) {
     // get last part of string - the command,
     // then irsend the code version of the command -m use a struct?
     //  https://stackoverflow.com/questions/5193570/value-lookup-table-in-c-by-strings
-    char *commandStr = getCommandStr(topic);  // get pointer to the command string
+    char commandStr[25];
+    getCommandStr(topic, commandStr);  // get pointer to the command string 3rd section
     unsigned int command = lookupCommandCode(commandStr);
 
-    if (command != -EINVAL){
-        //good command code so txmit
+    Serial.printf("command: %#08x\n", command);
+
+    if (command != -EINVAL) {
+        // good command code so txmit
+        Serial.printf("command txed: %#08x\n", command);
+
         irsend.sendNEC(command);
+
     }
-
-
-    // if (strcmp(topic, "irbridge/amplifier/video1") == 0) {  // does topic match this text?
-    //     Serial.println("ir send amp source select video1");
-    //     // irsend.sendNEC(SELECT_VIDEO1);
-    // } else if (strcmp(topic, "irbridge/amplifier/tuner") == 0) {  // does topic match this text?
-    //     Serial.println("ir send amp source select tuner");
-    //     // irsend.sendNEC(SELECT_TUNER);
-    // } else if (strcmp(topic, "irbridge/amplifier/aux") == 0) {  // does topic match this text?
-    //     Serial.println("ir send amp source select AUX");
-    //     // irsend.sendNEC(SELECT_AUX);
-    // } else if (strcmp(topic, "irbridge/amplifier/mute") == 0) {  // does topic match this text?
-    //     Serial.println("ir send amp mute");
-    //     // irsend.sendNEC(MUTE);
-    // } else if (strcmp(topic, "irbridge/amplifier/volumeup") == 0) {  // does topic match this text?
-    //     Serial.println("ir send amp vol up");
-    //     // irsend.sendNEC(VOLUME_UP);
-    // } else if (strcmp(topic, "irbridge/amplifier/volumedown") == 0) {  // does topic match this text?
-    //     Serial.println("ir send amp vol down");
-    //     // irsend.sendNEC(VOLUME_DOWN);
-    // } else if (strcmp(topic, "irbridge/amplifier/poweron") == 0) {  // does topic match this text?
-    //     Serial.println("ir send amp power on");
-    //     // irsend.sendNEC(POWER_ON);
-    // } else if (strcmp(topic, "irbridge/amplifier/poweroff") == 0) {  // does topic match this text?
-    //     Serial.println("ir send amp power off");
-    //     // irsend.sendNEC(POWER_OFF);
-    // } else if (strcmp(topic, "irbridge/amplifier/standby") == 0) {  // does topic match this text?
-    //     if ((payload[1] - 'n') == 0) {                              // found the 'n' in "on" ?
-    //         Serial.println("ir send amp standby on");
     //         // irsend.sendNEC(POWER_ON);
-    //     } else {  // payload must have been "off"
-    //         Serial.println("ir send amp standby off");
-    //         // irsend.sendNEC(POWER_OFF);
-    //     }
-    // }
     //! possible incoming topics and payload: "irbridge/amplifier/standby"     "on|off"
     else if (strcmp(topic, "irbridge/amplifier/code") == 0) {  // raw code
         Serial.print("plain NEC code Tx : ");
