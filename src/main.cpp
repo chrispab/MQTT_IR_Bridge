@@ -46,10 +46,10 @@ uint16_t rawDataLength = 75;
 
 // accepts pointer to command string
 // returns thge code
-unsigned int lookupCommandCode(const char *commandName) {
+uint64_t lookupCommandCode(const char *commandName) {
     typedef struct item_t {
         const char *commandStr;
-        unsigned int code;
+        uint64_t code;
     } item_t;
     item_t table[] = {
         {"power_on", POWER_ON},
@@ -115,7 +115,7 @@ void callback(char *topic, byte *payload, unsigned int length) {
     //  https://stackoverflow.com/questions/5193570/value-lookup-table-in-c-by-strings
     char commandStr[25];
     getCommandStr(topic, commandStr);  // get pointer to the command string 3rd section
-    unsigned int command = lookupCommandCode(commandStr);
+    uint64_t command = lookupCommandCode(commandStr);
 
     Serial.printf("command: %#08x\n", command);
 
