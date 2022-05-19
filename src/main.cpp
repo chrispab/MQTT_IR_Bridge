@@ -232,4 +232,7 @@ void loop() {
 
     heartBeatLED.update();
     blueBeatLED.update();
+
+        //! send out telemetry every 5 mins
+    publishTelemetry();
 }

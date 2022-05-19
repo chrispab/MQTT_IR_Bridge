@@ -1,2 +1,2 @@
-#define VERSION "V0.22 : master : non blocking MQTT reconnect"
+#define VERSION "V0.23 : master : TELEMETRY"
 

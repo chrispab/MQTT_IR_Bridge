@@ -1,5 +1,6 @@
 //#include "WebSocketLib.h"
 #include <PubSubClient.h>
+#include <WiFi.h>
 
 #include "config.h"
 extern PubSubClient MQTTclient;
@@ -230,4 +231,57 @@ void processMQTTMessage(void) {
         // transmitter.operateSocket(MQTTSocketNumber - 1, MQTTNewState);
         MQTTNewData = false;  // indicate not new data now, processed
     }
+}
+
+/*
+   Return the quality (Received Signal Strength Indicator)
+   of the WiFi network.
+   Returns a number between 0 and 100 if WiFi is connected.
+   Returns -1 if WiFi is disconnected.
+*/
+int getQuality() {
+  if (WiFi.status() != WL_CONNECTED)
+    return -1;
+  int dBm = WiFi.RSSI();
+  if (dBm <= -100)
+    return 0;
+  if (dBm >= -50)
+    return 100;
+  return 2 * (dBm + 100);
+}
+
+
+
+unsigned long telePeriodMs = 240000;
+//! publish telemetry every 5 mins , e.g. rssi info
+unsigned long lastTelemetryPublish = 0-telePeriodMs;
+void publishTelemetry() {
+    unsigned long now = millis();
+    if (now - lastTelemetryPublish > telePeriodMs) {
+        lastTelemetryPublish = now;
+        // Serial.println("MQTT is not connected.. trying to connect now");
+
+        // Attempt to reconnect
+        // if (MQTTclient.connect("433BridgeMQTTClient", "433Bridge/LWT", 1, true, "Offline")) {
+        //     myWebSerial.println("connected to MQTT server");
+
+        // String pubString = "{" report ":{" light ": " " + String(lightRead) + " "}}";
+        char message_buff[10];
+        // long rssi = WiFi.RSSI();
+        String pubString = String(getQuality()); 
+        pubString.toCharArray(message_buff, pubString.length() + 1);
+        //Serial.println(pubString);
+        //client.publish("io.m2m/arduino/lightsensor", message_buff);
+
+        MQTTclient.publish("irbridge/rssi", message_buff);  // ensure send online
+                                                     // MQTTclient.publish(publishLWTTopic, "OnlWiFi.RSSI()ine");
+                                                     // MQTTclient.subscribe(subscribeTopic);
+                                                     // MQTTclient.subscribe(subscribeTopic2);
+                                                     // MQTTclient.subscribe(subscribeTopic3);
+
+        // Serial.println("MQTT is now connected....");
+        // lastReconnectAttempt = 0;
+        // }
+    }
+    // return MQTTclient.connected();
 }
