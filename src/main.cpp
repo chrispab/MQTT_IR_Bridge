@@ -91,6 +91,15 @@ char *getCommandStr(char *topic, char *resultCommandStr) {
     return 0;
 }
 
+void pulseLED(int pulses, int time) {
+    for (size_t i = 0; i < pulses; i++) {
+        heartBeatLED.fullOff();
+        delay(time);
+        heartBeatLED.fullOn();
+        delay(time/3);
+    }
+}
+
 // MQTT stuff
 void callback(char *topic, byte *payload, unsigned int length) {
     // handle message arrived
@@ -119,11 +128,12 @@ void callback(char *topic, byte *payload, unsigned int length) {
 
     Serial.printf("command: %#08x\n", command);
 
-    if (command != -EINVAL) {
+    if ( (command != -EINVAL) && ((payload[1]) == 'n') ) {//and if payload = o'n', dont do anything with OFF
         // good command code so txmit
         Serial.printf("command txed: %#08x\n", command);
 
         irsend.sendNEC(command);
+        pulseLED(4,50);
 
     }
     //         // irsend.sendNEC(POWER_ON);
@@ -233,6 +243,6 @@ void loop() {
     heartBeatLED.update();
     blueBeatLED.update();
 
-        //! send out telemetry every 5 mins
+    //! send out telemetry every 5 mins
     publishTelemetry();
 }
