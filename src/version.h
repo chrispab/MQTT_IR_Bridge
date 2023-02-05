@@ -1,2 +1,1 @@
-#define VERSION "V0.25 : refactor : led indicate pulse"
-
+#define VERSION "V0.29 : refactor: pubTopiStr stat"

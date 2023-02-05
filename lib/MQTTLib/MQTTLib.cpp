@@ -1,8 +1,10 @@
-//#include "WebSocketLib.h"
+// #include "WebSocketLib.h"
 #include <PubSubClient.h>
 #include <WiFi.h>
 
 #include "config.h"
+#include "version.h"
+
 extern PubSubClient MQTTclient;
 
 bool MQTTNewData = false;
@@ -11,7 +13,7 @@ int MQTTSocketNumber = 1;  // 1-16
 
 // MQTT stuff
 // IPAddress mqttBroker(192, 168, 0, 200);
-char subscribeTopic[] = "irbridge/#";
+char subscribeTopic[] = "irbridge/cmnd/#";
 // char subscribeTopic2[] = "irbridge/amplifier/code";
 // char subscribeTopic3[] = "Zone3/#";
 // char subscribeTopic[] = "#";
@@ -20,10 +22,10 @@ char publishTempTopic[] = "433Bridge/Temperature";
 char publishHumiTopic[] = "433Bridge/Humidity";
 
 /**
- * 
  *
- * 
-*/
+ *
+ *
+ */
 void connectMQTT() {
     bool MQTTConnectTimeout = false;
     unsigned long checkPeriodMillis = 20000;
@@ -33,7 +35,7 @@ void connectMQTT() {
     static unsigned long lastReconnectAttemptMillis =
         nowMillis - checkPeriodMillis - 1000;
 
-    //is it time to chek the MQTT connection again?
+    // is it time to chek the MQTT connection again?
     if ((nowMillis - lastReconnectAttemptMillis) > checkPeriodMillis) {
         // myWebSerial.println("ready to try MQTT reconnectMQTT...");
         Serial.print("nowMillis : ");
@@ -68,11 +70,9 @@ void connectMQTT() {
     }
 }
 
-
 long lastReconnectAttempt = 0;
 
 boolean reconnectMQTT() {
-
     // Serial.println("MQTT is not connected.. trying to connect now");
 
     long now = millis();
@@ -83,13 +83,12 @@ boolean reconnectMQTT() {
 
         // Attempt to reconnect
         if (MQTTclient.connect(MQTT_CLIENT_NAME, LWT_TOPIC, 1, true, "Offline")) {
-
             // Once connected, publish an announcement...
-            MQTTclient.publish("outTopic", "hello world");
+            // MQTTclient.publish("outTopic", "hello world");
             MQTTclient.publish(LWT_TOPIC, "Online", true);  // ensure send online
             // ... and resubscribe
             MQTTclient.subscribe(subscribeTopic);
-    
+
             Serial.println("MQTT is now connected....");
 
             lastReconnectAttempt = 0;
@@ -97,8 +96,6 @@ boolean reconnectMQTT() {
     }
     return MQTTclient.connected();
 }
-
-
 
 extern char *getTimeStr();
 
@@ -201,7 +198,7 @@ void MQTTRxcallback(char *topic, byte *payload, unsigned int length) {
 }
 
 // void MQTTLibSetup(void) {}
-//#include "WebSerial.h"
+// #include "WebSerial.h"
 // extern WebSerial myWebSerial;
 // #include "My433Transmitter.h"
 // extern My433Transmitter transmitter;
@@ -240,21 +237,19 @@ void processMQTTMessage(void) {
    Returns -1 if WiFi is disconnected.
 */
 int getQuality() {
-  if (WiFi.status() != WL_CONNECTED)
-    return -1;
-  int dBm = WiFi.RSSI();
-  if (dBm <= -100)
-    return 0;
-  if (dBm >= -50)
-    return 100;
-  return 2 * (dBm + 100);
+    if (WiFi.status() != WL_CONNECTED)
+        return -1;
+    int dBm = WiFi.RSSI();
+    if (dBm <= -100)
+        return 0;
+    if (dBm >= -50)
+        return 100;
+    return 2 * (dBm + 100);
 }
-
-
 
 unsigned long telePeriodMs = 240000;
 //! publish telemetry every 5 mins , e.g. rssi info
-unsigned long lastTelemetryPublish = 0-telePeriodMs;
+unsigned long lastTelemetryPublish = 0 - telePeriodMs;
 void publishTelemetry() {
     unsigned long now = millis();
     if (now - lastTelemetryPublish > telePeriodMs) {
@@ -268,16 +263,19 @@ void publishTelemetry() {
         // String pubString = "{" report ":{" light ": " " + String(lightRead) + " "}}";
         char message_buff[10];
         // long rssi = WiFi.RSSI();
-        String pubString = String(getQuality()); 
+        String pubString = String(getQuality());
         pubString.toCharArray(message_buff, pubString.length() + 1);
-        //Serial.println(pubString);
-        //client.publish("io.m2m/arduino/lightsensor", message_buff);
+        // Serial.println(pubString);
+        // client.publish("io.m2m/arduino/lightsensor", message_buff);
 
-        MQTTclient.publish("irbridge/rssi", message_buff);  // ensure send online
-                                                     // MQTTclient.publish(publishLWTTopic, "OnlWiFi.RSSI()ine");
-                                                     // MQTTclient.subscribe(subscribeTopic);
-                                                     // MQTTclient.subscribe(subscribeTopic2);
-                                                     // MQTTclient.subscribe(subscribeTopic3);
+        MQTTclient.publish("irbridge/stat/rssi", message_buff);  // ensure send online
+
+        MQTTclient.publish("irbridge/stat/version", VERSION);  // ensure send online
+
+        // MQTTclient.publish(publishLWTTopic, "OnlWiFi.RSSI()ine");
+        // MQTTclient.subscribe(subscribeTopic);
+        // MQTTclient.subscribe(subscribeTopic2);
+        // MQTTclient.subscribe(subscribeTopic3);
 
         // Serial.println("MQTT is now connected....");
         // lastReconnectAttempt = 0;

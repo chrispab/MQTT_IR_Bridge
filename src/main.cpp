@@ -78,7 +78,7 @@ uint64_t lookupCommandCode(const char *commandName) {
 
 // pass in topic string and
 // return pointer to final token - command string
-char *getCommandStr(char *topic, char *resultCommandStr) {
+char *getCommandStrPtr(char *topic, char *resultCommandStr) {
     // char *lastToken = NULL;
     char *token = strtok(topic, "/");
     while (token) {
@@ -96,11 +96,16 @@ void pulseLED(int pulses, int time) {
         heartBeatLED.fullOff();
         delay(time);
         heartBeatLED.fullOn();
-        delay(time/3);
+        delay(time / 3);
     }
 }
+// Callback function header
+void callback(char *topic, byte *payload, unsigned int length);
 
-// MQTT stuff
+IPAddress mqttBroker(192, 168, 0, MQTT_LAST_OCTET);
+WiFiClient myWiFiClient;
+PubSubClient MQTTclient(mqttBroker, 1883, callback, myWiFiClient);
+
 void callback(char *topic, byte *payload, unsigned int length) {
     // handle message arrived
     // format and display the whole MQTT message and payload
@@ -108,12 +113,16 @@ void callback(char *topic, byte *payload, unsigned int length) {
                                 // finally the payload, and a bit extra to make
                                 // sure there is room in the string and even
                                 // more chars";
+
+    char pubTopicStr[255];
+    strcpy(pubTopicStr, topic);
+
     strcpy(fullMQTTmessage, "MQTT Rxed Topic: [");
-    strcat(fullMQTTmessage, topic);
+    strcat(fullMQTTmessage, topic);  // e.g "irbridge/stat/amplifier/volume_up"
     strcat(fullMQTTmessage, "], ");
     // append payload and add \o terminator
     strcat(fullMQTTmessage, "Payload: [");
-    strncat(fullMQTTmessage, (char *)payload, length);
+    strncat(fullMQTTmessage, (char *)payload, length);  // e.g o'on or 'off
     strcat(fullMQTTmessage, "]");
 
     Serial.println(fullMQTTmessage);
@@ -123,40 +132,33 @@ void callback(char *topic, byte *payload, unsigned int length) {
     // then irsend the code version of the command -m use a struct?
     //  https://stackoverflow.com/questions/5193570/value-lookup-table-in-c-by-strings
     char commandStr[25];
-    getCommandStr(topic, commandStr);  // get pointer to the command string 3rd section
+    getCommandStrPtr(topic, commandStr);  // get pointer to the command string 3rd section
     uint64_t command = lookupCommandCode(commandStr);
 
     Serial.printf("command: %#08x\n", command);
 
-    if ( (command != -EINVAL) && ((payload[1]) == 'n') ) {//and if payload = o'n', dont do anything with OFF
+    // if its a recognised command and if payload last char is 'n' e.g. "o'n'"", dont do anything with OFF
+    if ((command != -EINVAL) && ((payload[1]) == 'n')) {
         // good command code so txmit
         Serial.printf("command txed: %#08x\n", command);
 
         irsend.sendNEC(command);
-        pulseLED(4,50);
+        pulseLED(4, 50);
 
-    }
-    //         // irsend.sendNEC(POWER_ON);
-    //! possible incoming topics and payload: "irbridge/amplifier/standby"     "on|off"
-    else if (strcmp(topic, "irbridge/amplifier/code") == 0) {  // raw code
+        // now send a meesage to mqtt to indicate the status
+        // e.g "irbridge/stat/amplifier/volume_up", payload 'on
+        strcpy(pubTopicStr, "irbridge/stat/amplifier/");
+        strcat(pubTopicStr, commandStr);
+        MQTTclient.publish((char *)pubTopicStr, (char *)"on");
+
+    } else if (strcmp(topic, "irbridge/amplifier/code") == 0) {  // raw code
         Serial.print("plain NEC code Tx : ");
         unsigned long actualval;
         actualval = strtoul((char *)payload, NULL, 10);
         Serial.println(actualval);
         irsend.sendNEC(actualval);
     }
-    //     else if (strcmp(topic, "irbridge/amplifier/raw") == 0) {  // raw code
-    //         Serial.print("raw code Tx : ");
-    //         unsigned long actualval;
-    //         actualval = strtoul((char *)payload, NULL, 10);
-    //         Serial.println(actualval);
-    //         irsend.sendRaw(rawData, rawDataLength, 38);  // Send a raw data capture at 38kHz.
-    //     }
 }
-
-IPAddress mqttBroker(192, 168, 0, MQTT_LAST_OCTET);
-WiFiClient myWiFiClient;
-PubSubClient MQTTclient(mqttBroker, 1883, callback, myWiFiClient);
 
 const uint32_t kBaudRate = 115200;
 
@@ -230,7 +232,7 @@ void loop() {
     // maybe checkwifi here
     connectWiFi();
 
-    if (!MQTTclient.connected()) {
+    if (WiFi.isConnected() && !MQTTclient.connected()) {
         // Attempt to reconnect
         reconnectMQTT();  // Attempt to reconnect
     } else {
