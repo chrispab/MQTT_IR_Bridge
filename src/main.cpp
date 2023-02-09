@@ -94,10 +94,12 @@ char *getCommandStrPtr(char *topic, char *resultCommandStr) {
 void pulseLED(int pulses, int time) {
     for (size_t i = 0; i < pulses; i++) {
         heartBeatLED.fullOff();
-        delay(time);
+        delay(time / 3);
         heartBeatLED.fullOn();
         delay(time / 3);
     }
+    heartBeatLED.fullOff();
+    delay(time / 3);
 }
 // Callback function header
 void callback(char *topic, byte *payload, unsigned int length);
@@ -143,7 +145,7 @@ void callback(char *topic, byte *payload, unsigned int length) {
         Serial.printf("command txed: %#08x\n", command);
 
         irsend.sendNEC(command);
-        pulseLED(4, 50);
+        pulseLED(3, 150);
 
         // now send a meesage to mqtt to indicate the status
         // e.g "irbridge/stat/amplifier/volume_up", payload 'on
