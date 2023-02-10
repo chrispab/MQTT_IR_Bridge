@@ -144,14 +144,15 @@ void callback(char *topic, byte *payload, unsigned int length) {
         // good command code so txmit
         Serial.printf("command txed: %#08x\n", command);
 
-        irsend.sendNEC(command);
-        pulseLED(3, 150);
-
         // now send a meesage to mqtt to indicate the status
         // e.g "irbridge/stat/amplifier/volume_up", payload 'on
         strcpy(pubTopicStr, "irbridge/stat/amplifier/");
         strcat(pubTopicStr, commandStr);
+
         MQTTclient.publish((char *)pubTopicStr, (char *)"on");
+        irsend.sendNEC(command);
+        pulseLED(3, 100);
+        MQTTclient.publish((char *)pubTopicStr, (char *)"off");
 
     } else if (strcmp(topic, "irbridge/amplifier/code") == 0) {  // raw code
         Serial.print("plain NEC code Tx : ");
