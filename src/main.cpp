@@ -94,12 +94,12 @@ char *getCommandStrPtr(char *topic, char *resultCommandStr) {
 void pulseLED(int pulses, int time) {
     for (size_t i = 0; i < pulses; i++) {
         heartBeatLED.fullOff();
-        delay(time / 3);
+        delay(time / 2);
         heartBeatLED.fullOn();
-        delay(time / 3);
+        delay(time / 2);
     }
-    heartBeatLED.fullOff();
-    delay(time / 3);
+    // heartBeatLED.fullOff();
+    // delay(time / 3);
 }
 // Callback function header
 void callback(char *topic, byte *payload, unsigned int length);
@@ -151,7 +151,7 @@ void callback(char *topic, byte *payload, unsigned int length) {
 
         MQTTclient.publish((char *)pubTopicStr, (char *)"on");
         irsend.sendNEC(command);
-        pulseLED(3, 100);
+        pulseLED(3, 80);
         MQTTclient.publish((char *)pubTopicStr, (char *)"off");
 
     } else if (strcmp(topic, "irbridge/amplifier/code") == 0) {  // raw code
